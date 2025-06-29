@@ -1,56 +1,5 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8" />
-  <title>Avalie Apps e Ganhe R$25</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
-    .box { background: #fff; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    .btn { background: #22c55e; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-    .btn:disabled { background: #aaa; cursor: not-allowed; }
-    input, select { width: 100%; padding: 8px; margin-top: 8px; border-radius: 6px; border: 1px solid #ccc; }
-    .hidden { display: none; }
-  </style>
-</head>
-<body>
-
-  <div class="box" id="ativacaoBox">
-    <h2>🔐 Ative sua conta com Pix</h2>
-    <p>Você precisa fazer um Pix de <strong>R$1,00</strong> para liberar o sistema.</p>
-    <p><strong>Chave Pix:</strong> <code>040 747 111 17</code></p>
-    <input type="text" id="pixComprovante" placeholder="Digite o nome do titular do Pix" />
-    <button class="btn" onclick="ativarConta()">Ativar Conta</button>
-  </div>
-
-  <div class="box hidden" id="conteudo">
-    <h2>📲 Escolha um App para Avaliar</h2>
-    <select id="appSelect" onchange="mostrarPerguntas()">
-      <option value="">-- Selecione um aplicativo --</option>
-      <option value="tiktok">TikTok</option>
-      <option value="kwai">Kwai</option>
-      <option value="instagram">Instagram</option>
-    </select>
-  </div>
-
-  <div class="box hidden" id="formulario">
-    <h3>📋 Responda às perguntas</h3>
-    <div id="perguntasBox"></div>
-    <button class="btn" id="confirmarBtn" onclick="finalizarAvaliacao()" disabled>Confirmar Avaliação</button>
-  </div>
-
-  <div class="box hidden" id="saldoBox">
-    <h3>💰 Seu saldo: <strong id="saldo">R$0</strong></h3>
-    <div id="aviso" style="color: green; font-weight: bold; margin-top: 10px;"></div>
-  </div>
-
-  <div class="box hidden" id="resgateBox">
-    <h3>💸 Resgatar Dinheiro</h3>
-    <input type="text" id="chavePix" placeholder="Sua chave Pix para receber" />
-    <button class="btn" onclick="resgatar()">Resgatar Saldo</button>
-    <div id="resgateMsg" style="margin-top: 10px;"></div>
-  </div>
-
-  <script>
+<script>
+  window.onload = () => {
     let saldo = Number(localStorage.getItem('saldo')) || 0;
     let ativado = localStorage.getItem('ativado') === 'true';
     const perguntas = {
@@ -105,12 +54,17 @@
         perguntas[app].forEach((pergunta, i) => {
           perguntasBox.innerHTML += `
             <label>${pergunta}</label>
-            <select id="resp${i}" onchange="verificarRespostas()">
+            <select id="resp${i}">
               <option value="">-- Selecione --</option>
               <option value="sim">Sim</option>
               <option value="nao">Não</option>
             </select><br><br>
           `;
+        });
+
+        // Adiciona listeners depois que os <select> foram inseridos
+        perguntas[app].forEach((_, i) => {
+          document.getElementById(`resp${i}`).addEventListener('change', verificarRespostas);
         });
       } else {
         document.getElementById('formulario').classList.add('hidden');
@@ -152,8 +106,13 @@
     }
 
     atualizarTela();
-  </script>
 
-</body>
-</html>
+    // Torna funções globais para os botões
+    window.ativarConta = ativarConta;
+    window.mostrarPerguntas = mostrarPerguntas;
+    window.finalizarAvaliacao = finalizarAvaliacao;
+    window.resgatar = resgatar;
+  };
+</script>
+
 
