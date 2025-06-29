@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Avalie e Ganhe R$25</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+    .box { background: #fff; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .btn { background: #22c55e; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+    .btn:disabled { background: #aaa; }
+    input { width: 100%; padding: 8px; margin-top: 8px; border-radius: 6px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+
+  <div class="box" id="ativacaoBox">
+    <h2>🔐 Ative sua conta com Pix</h2>
+    <p>Você precisa fazer um Pix de <strong>R$1,00</strong> para liberar o sistema.</p>
+    <p><strong>Chave Pix:</strong> <code>040 747 111 17</code></p>
+    <input type="text" id="pixComprovante" placeholder="Digite o nome do titular do Pix" />
+    <button class="btn" onclick="ativarConta()">Ativar Conta</button>
+  </div>
+
+  <div class="box" id="conteudo" style="display:none;">
+    <h2>📲 Avalie os Aplicativos</h2>
+    <ul>
+      <li><button class="btn" onclick="avaliarApp()">Avaliar TikTok</button></li>
+      <li><button class="btn" onclick="avaliarApp()">Avaliar Kwai</button></li>
+      <li><button class="btn" onclick="avaliarApp()">Avaliar Instagram</button></li>
+    </ul>
+  </div>
+
+  <div class="box" id="saldoBox" style="display:none;">
+    <h3>💰 Seu saldo: <strong id="saldo">R$0</strong></h3>
+    <div id="aviso" style="color: green; font-weight: bold; margin-top: 10px;"></div>
+  </div>
+
+  <div class="box" id="resgateBox" style="display:none;">
+    <h3>💸 Resgatar Dinheiro</h3>
+    <input type="text" id="chavePix" placeholder="Sua chave Pix para receber" />
+    <button class="btn" onclick="resgatar()">Resgatar Saldo</button>
+    <div id="resgateMsg" style="margin-top: 10px;"></div>
+  </div>
+
+  <script>
+    let saldo = Number(localStorage.getItem('saldo')) || 0;
+    let ativado = localStorage.getItem('ativado') === 'true';
+
+    function atualizarTela() {
+      if (ativado) {
+        document.getElementById('ativacaoBox').style.display = 'none';
+        document.getElementById('conteudo').style.display = 'block';
+        document.getElementById('saldoBox').style.display = 'block';
+        document.getElementById('resgateBox').style.display = 'block';
+        document.getElementById('saldo').textContent = 'R$' + saldo;
+      }
+    }
+
+    function ativarConta() {
+      const nome = document.getElementById('pixComprovante').value.trim();
+      if (nome.length > 2) {
+        localStorage.setItem('ativado', 'true');
+        ativado = true;
+        atualizarTela();
+        alert('✅ Conta ativada com sucesso!');
+      } else {
+        alert('❌ Digite o nome de quem fez o Pix para continuar.');
+      }
+    }
+
+    function avaliarApp() {
+      saldo += 25;
+      localStorage.setItem('saldo', saldo);
+      document.getElementById('saldo').textContent = 'R$' + saldo;
+      document.getElementById('aviso').textContent = '🎉 Você ganhou R$25!';
+      setTimeout(() => {
+        document.getElementById('aviso').textContent = '';
+      }, 3000);
+    }
+
+    function resgatar() {
+      const chave = document.getElementById('chavePix').value.trim();
+      if (chave.length > 5 && saldo >= 25) {
+        document.getElementById('resgateMsg').textContent = `✅ Você irá receber R$${saldo} na chave Pix: ${chave}`;
+        saldo = 0;
+        localStorage.setItem('saldo', saldo);
+        document.getElementById('saldo').textContent = 'R$0';
+      } else {
+        document.getElementById('resgateMsg').textContent = '❌ Preencha a chave Pix corretamente e tenha pelo menos R$25 de saldo!';
+      }
+    }
+
+    atualizarTela();
+  </script>
+
+</body>
+</html>
