@@ -1,17 +1,248 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Avalie Apps e Ganhe R$25</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
-    .box { background: #fff; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    .btn { background: #22c55e; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-    .btn:disabled { background: #aaa; cursor: not-allowed; }
-    input, select { width: 100%; padding: 8px; margin-top: 8px; border-radius: 6px; border: 1px solid #ccc; }
-    .hidden { display: none; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+    .box {
+      background: #fff;
+      padding: 25px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    h2, h3 {
+      margin-top: 0;
+      color: #111827;
+    }
+    .btn {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #059669;
+    }
+    .btn:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+    .hidden {
+      display: none;
+    }
+    code {
+      background: #f3f4f6;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    #aviso {
+      margin-top: 12px;
+      color: #22c55e;
+      font-weight: bold;
+    }
+    #resgateMsg {
+      color: #ef4444;
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
+  <div class="container">
+
+    <div class="box hidden" id="ativacaoBox">
+      <h2>🔐 Ative sua Conta com Pix</h2>
+      <p>Você precisa fazer um Pix de <strong>R$1,00</strong> para liberar o sistema.</p>
+      <p><strong>Chave Pix:</strong> <code>040 747 111 17</code></p>
+      <input type="text" id="pixComprovante" placeholder="Nome do titular do Pix">
+      <button class="btn" onclick="ativarConta()">Ativar Conta</button>
+    </div>
+
+    <div class="box hidden" id="conteudo">
+      <h2>📲 Escolha um App para Avaliar</h2>
+      <select id="appSelect" onchange="mostrarPerguntas()">
+        <option value="">-- Selecione um aplicativo --</option>
+        <option value="tiktok">TikTok</option>
+        <option value="kwai">Kwai</option>
+        <option value="instagram">Instagram</option>
+      </select>
+    </div>
+
+    <div class="box hidden" id="formulario">
+      <h3>📋 Responda às perguntas</h3>
+      <div id="perguntasBox"></div>
+      <button class="btn" id="confirmarBtn" onclick="finalizarAvaliacao()" disabled>Confirmar Avaliação</button>
+    </div>
+
+    <div class="box" id="saldoBox">
+      <h3>💰 Seu saldo: <strong id="saldo">R$0</strong></h3>
+      <div id="aviso"></div>
+    </div>
+
+    <div class="box hidden" id="resgateBox">
+      <h3>💸 Resgatar Dinheiro</h3>
+      <input type="text" id="chavePix" placeholder="Sua chave Pix para receber">
+      <button class="btn" onclick="resgatar()">Resgatar Saldo</button>
+      <div id="resgateMsg"></div>
+    </div>
+
+  </div>
+
+  <script>
+    window.onload = () => {
+      let saldo = Number(localStorage.getItem('saldo')) || 0;
+      let ativado = localStorage.getItem('ativado') === 'true';
+
+      const perguntas = {
+        tiktok: [
+          "Você achou o app fácil de usar?",
+          "O conteúdo era interessante?",
+          "Você recomendaria o TikTok a um amigo?"
+        ],
+        kwai: [
+          "O app foi rápido para carregar?",
+          "Você achou o layout agradável?",
+          "Os vídeos eram divertidos?"
+        ],
+        instagram: [
+          "Você teve alguma dificuldade de navegação?",
+          "Achou útil para se conectar com amigos?",
+          "Gostou das funções de stories e reels?"
+        ]
+      };
+
+      function atualizarTela() {
+        document.getElementById('saldo').textContent = 'R$' + saldo;
+        if (ativado) {
+          document.getElementById('ativacaoBox').classList.add('hidden');
+          document.getElementById('conteudo').classList.remove('hidden');
+          document.getElementById('resgateBox').classList.remove('hidden');
+          document.getElementById('aviso').textContent = '';
+        } else if (saldo >= 150) {
+          document.getElementById('ativacaoBox').classList.remove('hidden');
+          document.getElementById('conteudo').classList.add('hidden');
+          document.getElementById('resgateBox').classList.add('hidden');
+          document.getElementById('aviso').textContent = '';
+        } else {
+          document.getElementById('ativacaoBox').classList.add('hidden');
+          document.getElementById('conteudo').classList.add('hidden');
+          document.getElementById('resgateBox').classList.add('hidden');
+          document.getElementById('aviso').textContent = '⚠️ Acumule R$150 para liberar a ativação via Pix.';
+        }
+      }
+
+      function ativarConta() {
+        const nome = document.getElementById('pixComprovante').value.trim();
+        if (nome.length > 2) {
+          localStorage.setItem('ativado', 'true');
+          ativado = true;
+          atualizarTela();
+          alert('✅ Conta ativada com sucesso!');
+        } else {
+          alert('❌ Digite o nome de quem fez o Pix.');
+        }
+      }
+
+      function mostrarPerguntas() {
+        const app = document.getElementById('appSelect').value;
+        const perguntasBox = document.getElementById('perguntasBox');
+        const confirmarBtn = document.getElementById('confirmarBtn');
+        perguntasBox.innerHTML = '';
+        confirmarBtn.disabled = true;
+
+        if (app) {
+          document.getElementById('formulario').classList.remove('hidden');
+          perguntas[app].forEach((pergunta, i) => {
+            perguntasBox.innerHTML += `
+              <label>${pergunta}</label>
+              <select id="resp${i}">
+                <option value="">-- Selecione --</option>
+                <option value="sim">Sim</option>
+                <option value="nao">Não</option>
+              </select><br><br>
+            `;
+          });
+
+          perguntas[app].forEach((_, i) => {
+            document.getElementById(`resp${i}`).addEventListener('change', verificarRespostas);
+          });
+        } else {
+          document.getElementById('formulario').classList.add('hidden');
+        }
+      }
+
+      function verificarRespostas() {
+        const app = document.getElementById('appSelect').value;
+        let todasRespondidas = true;
+        perguntas[app].forEach((_, i) => {
+          if (document.getElementById(`resp${i}`).value === "") {
+            todasRespondidas = false;
+          }
+        });
+        document.getElementById('confirmarBtn').disabled = !todasRespondidas;
+      }
+
+      function finalizarAvaliacao() {
+        saldo += 25;
+        localStorage.setItem('saldo', saldo);
+        document.getElementById('saldo').textContent = 'R$' + saldo;
+        document.getElementById('aviso').textContent = '🎉 Você ganhou R$25!';
+        document.getElementById('formulario').classList.add('hidden');
+        document.getElementById('appSelect').value = '';
+        setTimeout(() => {
+          document.getElementById('aviso').textContent = '';
+          atualizarTela();
+        }, 3000);
+      }
+
+      function resgatar() {
+        const chave = document.getElementById('chavePix').value.trim();
+        if (chave.length > 5 && saldo >= 25) {
+          document.getElementById('resgateMsg').textContent = `✅ Você irá receber R$${saldo} na chave Pix: ${chave}`;
+          saldo = 0;
+          localStorage.setItem('saldo', saldo);
+          atualizarTela();
+        } else {
+          document.getElementById('resgateMsg').textContent = '❌ Preencha a chave Pix corretamente e tenha pelo menos R$25 de saldo!';
+        }
+      }
+
+      atualizarTela();
+      window.ativarConta = ativarConta;
+      window.mostrarPerguntas = mostrarPerguntas;
+      window.finalizarAvaliacao = finalizarAvaliacao;
+      window.resgatar = resgatar;
+    };
+  </script>
+</body>
+</html>
 
 
